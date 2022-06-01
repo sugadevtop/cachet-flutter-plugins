@@ -535,7 +535,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         mResult = result
 
         val isGranted = GoogleSignIn.hasPermissions(GoogleSignIn.getLastSignedInAccount(activity), optionsToRegister)
-        mResul
+        mResult?.success(isGranted)
     }
 
     /// Called when the "logoutGoogleAccount" is invoked from Flutter
