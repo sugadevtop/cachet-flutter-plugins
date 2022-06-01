@@ -520,6 +520,20 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         }
     }
 
+    /// Called when the "checkAuthorization" is invoked from Flutter 
+    private fun checkAuthorization(call: MethodCall, result: Result) {
+        if (activity == null) {
+            result.success(false)
+            return
+        }
+
+        val optionsToRegister = callToHealthTypes(call)
+        mResult = result
+
+        val isGranted = GoogleSignIn.hasPermissions(GoogleSignIn.getLastSignedInAccount(activity), optionsToRegister)
+        mResul
+    }
+
     private fun getTotalStepsInInterval(call: MethodCall, result: Result) {
         val start = call.argument<Long>("startDate")!!
         val end = call.argument<Long>("endDate")!!
@@ -590,6 +604,8 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
     override fun onMethodCall(call: MethodCall, result: Result) {
         when (call.method) {
             "requestAuthorization" -> requestAuthorization(call, result)
+            "checkAuthorization" -> checkAuthorization(call, result)
+            "check"
             "getData" -> getData(call, result)
             "writeData" -> writeData(call, result)
             "getTotalStepsInInterval" -> getTotalStepsInInterval(call, result)
