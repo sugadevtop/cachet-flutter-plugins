@@ -2,10 +2,14 @@ package cachet.plugins.health
 
 import android.app.Activity
 import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.fitness.Fitness
 import com.google.android.gms.fitness.FitnessOptions
 import com.google.android.gms.fitness.request.DataReadRequest
 import com.google.android.gms.fitness.result.DataReadResponse
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.OnCompleteListener;
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
@@ -534,6 +538,30 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         mResul
     }
 
+    /// Called when the "logoutGoogleAccount" is invoked from Flutter
+    private fun logoutGoogleAccount(call: MethodCall, result: Result) {
+        if (activity == null) {
+            result.success(false)
+            return
+        }
+        try {
+            val signInOptions = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                    .requestEmail()
+                    .build();
+            val signInClient = GoogleSignIn.getClient(activity!!, signInOptions)
+            signInClient.signOut()
+                    .addOnCompleteListener(activity!!, OnCompleteListener<Void?> {})
+            signInClient.revokeAccess()
+                    .addOnCompleteListener(activity!!, OnCompleteListener<Void?> {})
+            result.success(true)
+
+        } catch (e3: Exception) {
+            activity!!.runOnUiThread {
+                result.success(false)
+            }
+        }
+    }
+
     private fun getTotalStepsInInterval(call: MethodCall, result: Result) {
         val start = call.argument<Long>("startDate")!!
         val end = call.argument<Long>("endDate")!!
@@ -605,6 +633,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         when (call.method) {
             "requestAuthorization" -> requestAuthorization(call, result)
             "checkAuthorization" -> checkAuthorization(call, result)
+            "logoutGoogleAccount" -> logoutGoogleAccount(call, result)
             "check"
             "getData" -> getData(call, result)
             "writeData" -> writeData(call, result)
