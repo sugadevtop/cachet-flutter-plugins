@@ -153,6 +153,38 @@ class HealthFactory {
     return isAuthorized ?? false;
   }
 
+  /// Logout Goole Account in Google Fit.
+  ///
+  /// Returns true if successful, false otherwise
+  ///
+  /// Parameters:
+  ///
+  /// * [types] - a list of [HealthDataType] which the permissions are requested for.
+  /// * [permissions] - Optional.
+  ///   + If unspecified, each [HealthDataType] in [types] is requested for READ [HealthDataAccess].
+  ///   + If specified, each [HealthDataAccess] in this list is requested for its corresponding indexed
+  ///   entry in [types]. In addition, the length of this list must be equal to that of [types].
+  Future<bool> logoutGoogleAccount(
+    List<HealthDataType> types, {
+    List<HealthDataAccess>? permissions,
+  }) async {
+    if (permissions != null && permissions.length != types.length) {
+      throw ArgumentError('The length of [types] must be same as that of [permissions].');
+    }
+
+    final mTypes = List<HealthDataType>.from(types, growable: true);
+    final mPermissions = permissions == null
+        ? List<int>.filled(types.length, HealthDataAccess.READ.index, growable: true)
+        : permissions.map((permission) => permission.index).toList();
+
+    // on Android, if BMI is requested, then also ask for weight and height
+    if (_platformType == PlatformType.ANDROID) _handleBMI(mTypes, mPermissions);
+
+    List<String> keys = mTypes.map((e) => _enumToString(e)).toList();
+    final bool? isAuthorized = await _channel.invokeMethod('logoutGoogleAccount', {'types': keys, "permissions": mPermissions});
+    return isAuthorized ?? false;
+  }
+
   static void _handleBMI(List<HealthDataType> mTypes, List<int> mPermissions) {
     final index = mTypes.indexOf(HealthDataType.BODY_MASS_INDEX);
 
