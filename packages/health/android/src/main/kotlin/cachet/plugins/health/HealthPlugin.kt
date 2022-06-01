@@ -634,7 +634,6 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
             "requestAuthorization" -> requestAuthorization(call, result)
             "checkAuthorization" -> checkAuthorization(call, result)
             "logoutGoogleAccount" -> logoutGoogleAccount(call, result)
-            "check"
             "getData" -> getData(call, result)
             "writeData" -> writeData(call, result)
             "getTotalStepsInInterval" -> getTotalStepsInInterval(call, result)
