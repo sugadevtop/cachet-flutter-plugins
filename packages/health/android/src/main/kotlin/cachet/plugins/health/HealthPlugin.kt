@@ -905,56 +905,6 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         }
     }
 
-    private fun getTotalStepsInInterval(call: MethodCall, result: Result) {
-        val start = call.argument<Long>("startDate")!!
-        val end = call.argument<Long>("endDate")!!
-
-        val activity = activity ?: return
-
-        val stepsDataType = keyToHealthDataType(STEPS)
-        val aggregatedDataType = keyToHealthDataType(AGGREGATE_STEP_COUNT)
-
-        val fitnessOptions = FitnessOptions.builder()
-            .addDataType(stepsDataType)
-            .addDataType(aggregatedDataType)
-            .build()
-        val gsa = GoogleSignIn.getAccountForExtension(activity, fitnessOptions)
-
-        val ds = DataSource.Builder()
-            .setAppPackageName("com.google.android.gms")
-            .setDataType(stepsDataType)
-            .setType(DataSource.TYPE_DERIVED)
-            .setStreamName("estimated_steps")
-            .build()
-
-        val duration = (end - start).toInt()
-
-        val request = DataReadRequest.Builder()
-            .aggregate(ds)
-            .bucketByTime(duration, TimeUnit.MILLISECONDS)
-            .setTimeRange(start, end, TimeUnit.MILLISECONDS)
-            .build()
-
-        Fitness.getHistoryClient(activity, gsa).readData(request)
-            .addOnFailureListener(errHandler(result))
-            .addOnSuccessListener(threadPoolExecutor!!, getStepsInRange(start, end, aggregatedDataType, result))
-
-    if (activity == null) {
-      result.success(false)
-      return
-    }
-
-    val optionsToRegister = callToHealthTypes(call)
-    mResult = result
-
-    val isGranted = GoogleSignIn.hasPermissions(
-      GoogleSignIn.getLastSignedInAccount(activity!!),
-      optionsToRegister
-    )
-
-    mResult?.success(isGranted)
-  }
-
   private fun getTotalStepsInInterval(call: MethodCall, result: Result) {
     val start = call.argument<Long>("startTime")!!
     val end = call.argument<Long>("endTime")!!
@@ -1042,8 +992,10 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         "writeData" -> writeData(call, result)
         "getTotalStepsInInterval" -> getTotalStepsInInterval(call, result)
         "hasPermissions" -> hasPermissions(call, result)
+        "writeWorkoutData" -> writeWorkoutData(call, result)
         else -> result.notImplemented()
     }
+  }
 
   override fun onAttachedToActivity(binding: ActivityPluginBinding) {
     if (channel == null) {
