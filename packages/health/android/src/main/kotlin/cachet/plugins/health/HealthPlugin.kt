@@ -867,7 +867,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) : MethodCallHandl
         val optionsToRegister = callToHealthTypes(call)
         mResult = result
 
-        val isGranted = GoogleSignIn.hasPermissions(GoogleSignIn.getLastSignedInAccount(activity), optionsToRegister)
+        val isGranted = GoogleSignIn.hasPermissions(GoogleSignIn.getLastSignedInAccount(activity!!), optionsToRegister)
         mResult?.success(isGranted)
     }
 
